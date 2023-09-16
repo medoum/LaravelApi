@@ -33,7 +33,7 @@ class UserController extends Controller
         'lastname' => 'required|string|max:191',
         'address' => 'required|string|max:191',
         'phone' => 'required|digits:10',
-        'email' => 'required|email|max:191',
+        'email' => 'required|email|max:191|unique:users',
         'password' => 'required|string|max:191'
     ]);
 
@@ -73,6 +73,64 @@ class UserController extends Controller
         return response()->json([
             'status' => 200,
             'user' => $user
+        ], 200);
+    } else {
+        return response()->json([
+            'status' => 404,
+            'message' => "Utilisateur avec l'ID $id non trouvé"
+        ], 404);
+    }
+}
+    public function updateUser(Request $request, int $id){
+
+        $validator = Validator::make($request->all(), [
+            'username' => 'required|string|max:191',
+            'firsname' => 'required|string|max:191',
+            'lastname' => 'required|string|max:191',
+            'address' => 'required|string|max:191',
+            'phone' => 'required|digits:10',
+            'email' => 'required|email|max:191',
+            'password' => 'required|string|max:191'
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 422,
+                'errors' => $validator->messages()
+            ], 422);
+        } else {
+            $user = User::find($id);
+
+            if ($user) {
+                $user->update([
+                    'username' => $request->username,
+                    'firsname' => $request->firsname,
+                    'lastname' => $request->lastname,
+                    'address' => $request->address,
+                    'phone' => $request->phone,
+                    'password' => Hash::make($request->password)
+                ]);
+                return response()->json([
+                    'status' => 200,
+                    'message' => "Utilisateur mise à jour avec succes"
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => 404,
+                    'message' => "Utilisateur avec l'ID $id non trouvé"
+                ], 404);
+            }
+        }
+    }
+    public function deleteUser($id){
+    $user = User::find($id);
+
+    if ($user) {
+        $user->delete();
+
+        return response()->json([
+            'status' => 200,
+            'message' => "Utilisateur avec l'ID $id a été supprimé avec succès"
         ], 200);
     } else {
         return response()->json([
